@@ -1,50 +1,55 @@
 package org.rbnk.dealership.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.rbnk.dealership.dto.CategoryDto;
 import org.rbnk.dealership.entity.Category;
+import org.rbnk.dealership.exception.CustomException;
+import org.rbnk.dealership.repository.CategoryRepository;
 import org.rbnk.dealership.service.CategoryService;
+import org.rbnk.dealership.util.CategoryMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import java.util.List;
+import java.util.Optional;
 
+@Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
-    private final EntityManager entityManager;
+    private static final String NOT_FOUND = "Category not found";
+    private final CategoryRepository categoryRepository;
 
-    public void saveCategory(Category category) {
-        entityManager.getTransaction().begin();
-        entityManager.persist(category);
-        entityManager.getTransaction().commit();
+    public CategoryDto findById(Long id) {
+        Optional<Category> categoryOptional = categoryRepository.findById(id);
+        Category category = categoryOptional.orElseThrow(() -> new CustomException(NOT_FOUND));
+        return CategoryMapper.INSTANCE.categoryToDto(category);
     }
 
-    public void updateCategory(Category category) {
-        entityManager.getTransaction().begin();
-        entityManager.merge(category);
-        entityManager.getTransaction().commit();
+    public List<CategoryDto> findAll() {
+        List<Category> category = categoryRepository.findAll();
+        return category.stream()
+                .map(CategoryMapper.INSTANCE::categoryToDto)
+                .toList();
     }
 
-    public void deleteCategory(Long id) {
-        entityManager.getTransaction().begin();
-        Category category = entityManager.find(Category.class, id);
-        if (category != null) {
-            entityManager.remove(category);
-        }
-        entityManager.getTransaction().commit();
+    @Transactional
+    public void save(CategoryDto categoryDto) {
+        Category category = CategoryMapper.INSTANCE.dtoToCategory(categoryDto);
+        categoryRepository.save(category);
     }
 
-    public Category getCarCategoryById(Long id) {
-        Category category = entityManager.find(Category.class, id);
-        return category;
+    @Transactional
+    public void update(CategoryDto categoryDto) {
+        Long id = categoryDto.getId();
+        categoryRepository.findById(id).orElseThrow(() -> new CustomException(NOT_FOUND));
+        Category category = CategoryMapper.INSTANCE.dtoToCategory(categoryDto);
+        category.setId(id);
+        categoryRepository.save(category);
     }
 
-    public List<Category> getAllCategories() {
-        entityManager.getTransaction().begin();
-        String jpqlQuery = "SELECT c FROM Category c";
-        Query query = entityManager.createQuery(jpqlQuery, Category.class);
-        List<Category> categories = query.getResultList();
-        entityManager.getTransaction().commit();
-        return categories;
+    @Transactional
+    public void delete(Long id) {
+        categoryRepository.findById(id).orElseThrow(() -> new CustomException(NOT_FOUND));
+        categoryRepository.deleteById(id);
     }
-
 }

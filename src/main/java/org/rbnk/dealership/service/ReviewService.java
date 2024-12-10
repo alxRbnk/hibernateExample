@@ -1,20 +1,20 @@
 package org.rbnk.dealership.service;
 
-import org.rbnk.dealership.entity.Review;
+import org.rbnk.dealership.dto.AddReviewDto;
+import org.rbnk.dealership.dto.ReviewDto;
 
-import javax.persistence.Query;
 import java.util.List;
 
 public interface ReviewService {
-    public void saveReview(Review review);
+    ReviewDto findById(Long id);
 
-    public void updateReview(Review review);
+    List<ReviewDto> findAll();
 
-    public void deleteReview(Long id);
+    void save(ReviewDto reviewDto);
 
-    public Review getReviewById(Long id);
+    void update(ReviewDto reviewDto);
 
-    public List<Review> getAllReviews();
+    void delete(Long id);
 
-    public List<Review> findReviewsByKeyword(String keyword);
+    void addReviewToCar(AddReviewDto addReviewDto);
 }

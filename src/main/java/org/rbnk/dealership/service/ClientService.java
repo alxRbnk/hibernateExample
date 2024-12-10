@@ -1,19 +1,21 @@
 package org.rbnk.dealership.service;
 
-import org.rbnk.dealership.entity.Client;
+import org.rbnk.dealership.dto.AssignCarDto;
+import org.rbnk.dealership.dto.ClientDto;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface ClientService {
-    void saveClient(Client client);
+    ClientDto findById(Long id);
 
-    void updateClient(Client client);
+    List<ClientDto> findAll();
 
-    void deleteClient(Long id);
+    void save(ClientDto clientDto);
 
-    Client getClientById(Long id);
+    void update(ClientDto clientDto);
 
-    List<Client> getAllClients();
+    void delete(Long id);
 
-    void assignCarToClient(Long carId, Long clientId);
+    void assignCarToClient(AssignCarDto assignCarDto);
 }

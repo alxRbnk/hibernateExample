@@ -1,18 +1,17 @@
 package org.rbnk.dealership.service;
 
-import org.rbnk.dealership.entity.Category;
+import org.rbnk.dealership.dto.CategoryDto;
 
-import javax.persistence.Query;
 import java.util.List;
 
 public interface CategoryService {
-    public void saveCategory(Category category);
+    CategoryDto findById(Long id);
 
-    public void updateCategory(Category category);
+    List<CategoryDto> findAll();
 
-    public void deleteCategory(Long id);
+    void save(CategoryDto categoryDto);
 
-    public Category getCarCategoryById(Long id);
+    void update(CategoryDto categoryDto);
 
-    public List<Category> getAllCategories();
+    void delete(Long id);
 }

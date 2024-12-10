@@ -1,62 +1,72 @@
 package org.rbnk.dealership.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.rbnk.dealership.dto.AssignCarDto;
+import org.rbnk.dealership.dto.ClientDto;
 import org.rbnk.dealership.entity.Car;
 import org.rbnk.dealership.entity.Client;
+import org.rbnk.dealership.exception.CustomException;
+import org.rbnk.dealership.repository.CarRepository;
+import org.rbnk.dealership.repository.ClientRepository;
 import org.rbnk.dealership.service.ClientService;
+import org.rbnk.dealership.util.ClientMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
+@Service
 @RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
-    private final EntityManager entityManager;
+    private static final String CLIENT_NOT_FOUND = "Client not found";
+    private static final String CAR_NOT_FOUND = "Car not found";
+    private final ClientRepository clientRepository;
+    private final CarRepository carRepository;
 
-    public void saveClient(Client client) {
-        entityManager.getTransaction().begin();
-        client.setRegistrationDate(LocalDate.now());
-        entityManager.persist(client);
-        entityManager.getTransaction().commit();
+    public ClientDto findById(Long id) {
+        Optional<Client> clientOptional = clientRepository.findById(id);
+        Client client = clientOptional.orElseThrow(() -> new CustomException(CLIENT_NOT_FOUND));
+        return ClientMapper.INSTANCE.clientToDto(client);
     }
 
-    public void updateClient(Client client) {
-        entityManager.getTransaction().begin();
-        entityManager.merge(client);
-        entityManager.getTransaction().commit();
+    public List<ClientDto> findAll() {
+        List<Client> clients = clientRepository.findAll();
+        return clients.stream()
+                .map(ClientMapper.INSTANCE::clientToDto)
+                .toList();
     }
 
-    public void deleteClient(Long id) {
-        entityManager.getTransaction().begin();
-        Client client = entityManager.find(Client.class, id);
-        if (client != null) {
-            entityManager.remove(client);
-        }
-        entityManager.getTransaction().commit();
+    @Transactional
+    public void save(ClientDto clientDto) {
+        Client client = ClientMapper.INSTANCE.dtoToClient(clientDto);
+        clientRepository.save(client);
     }
 
-    public Client getClientById(Long id) {
-        return entityManager.find(Client.class, id);
+    @Transactional
+    public void update(ClientDto clientDto) {
+        Long id = clientDto.getId();
+        clientRepository.findById(id).orElseThrow(() -> new CustomException(CLIENT_NOT_FOUND));
+        Client client = ClientMapper.INSTANCE.dtoToClient(clientDto);
+        client.setId(id);
+        clientRepository.save(client);
     }
 
-    public List<Client> getAllClients() {
-        entityManager.getTransaction().begin();
-        String jpqlQuery = "SELECT c FROM Client c";
-        Query query = entityManager.createQuery(jpqlQuery, Client.class);
-        List<Client> clients = query.getResultList();
-        entityManager.getTransaction().commit();
-        return clients;
+    @Transactional
+    public void delete(Long id) {
+        clientRepository.findById(id).orElseThrow(() -> new CustomException(CLIENT_NOT_FOUND));
+        clientRepository.deleteById(id);
     }
 
-    public void assignCarToClient(Long carId, Long clientId) {
-        entityManager.getTransaction().begin();
-        Car car = entityManager.find(Car.class, carId);
-        Client client = entityManager.find(Client.class, clientId);
-        if (car != null && client != null) {
-            client.getCars().add(car);
-            entityManager.merge(client);
-        }
-        entityManager.getTransaction().commit();
+    @Transactional
+    public void assignCarToClient(AssignCarDto assignCarDto){
+        Long clientId = assignCarDto.getClientId();
+        Long carId = assignCarDto.getCarId();
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new CustomException(CLIENT_NOT_FOUND));
+        Car car = carRepository.findById(carId)
+                .orElseThrow(() -> new CustomException(CAR_NOT_FOUND));
+        client.getCars().add(car);
+        clientRepository.save(client);
     }
 }

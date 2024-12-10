@@ -1,115 +1,82 @@
 package org.rbnk.dealership.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.rbnk.dealership.dto.AddCarDto;
+import org.rbnk.dealership.dto.CarDto;
+import org.rbnk.dealership.dto.CarPriceDto;
 import org.rbnk.dealership.entity.Car;
+import org.rbnk.dealership.entity.CarShowroom;
+import org.rbnk.dealership.exception.CustomException;
+import org.rbnk.dealership.repository.CarRepository;
+import org.rbnk.dealership.repository.ShowroomRepository;
 import org.rbnk.dealership.service.CarService;
+import org.rbnk.dealership.service.ShowroomService;
+import org.rbnk.dealership.util.CarMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
+@Service
 @RequiredArgsConstructor
 public class CarServiceImpl implements CarService {
-    private final EntityManager entityManager;
+    private static final String NOT_FOUND = "Car not found";
+    private final CarRepository carRepository;
+    private final ShowroomRepository showroomRepository;
 
-    public void saveCar(Car car) {
-        entityManager.getTransaction().begin();
-        entityManager.persist(car);
-        entityManager.getTransaction().commit();
+    public CarDto findCarById(Long id) {
+        Optional<Car> carOptional = carRepository.findById(id);
+        Car car = carOptional.orElseThrow(() -> new CustomException(NOT_FOUND));
+        return CarMapper.INSTANCE.carToCarDto(car);
     }
 
-    public void updateCar(Car car) {
-        entityManager.getTransaction().begin();
-        entityManager.merge(car);
-        entityManager.getTransaction().commit();
+    public List<CarDto> findAll() {
+        List<Car> cars = carRepository.findAll();
+        return cars.stream()
+                .map(CarMapper.INSTANCE::carToCarDto)
+                .toList();
     }
 
-    public void deleteCar(Long id) {
-        entityManager.getTransaction().begin();
-        Car car = entityManager.find(Car.class, id);
-        if (car != null) {
-            entityManager.remove(car);
-        }
-        entityManager.getTransaction().commit();
+    @Transactional
+    public void save(CarDto carDto) {
+        Car car = CarMapper.INSTANCE.carDtoToCar(carDto);
+        carRepository.save(car);
     }
 
-    public Car getCarById(Long id) {
-        Car car = entityManager.find(Car.class, id);
-        return car;
+    @Transactional
+    public void fullUpdate(CarDto carDto) {
+        Long id = carDto.getId();
+        carRepository.findById(id).orElseThrow(() -> new CustomException(NOT_FOUND));
+        Car car = CarMapper.INSTANCE.carDtoToCar(carDto);
+        car.setId(id);
+        carRepository.save(car);
     }
 
-    public List<Car> getAllCars() {
-        entityManager.getTransaction().begin();
-        String jpqlQuery = "SELECT c FROM Car c";
-        Query query = entityManager.createQuery(jpqlQuery, Car.class);
-        List<Car> cars = query.getResultList();
-        entityManager.getTransaction().commit();
-        return cars;
+    @Transactional
+    public void priceUpdate(CarPriceDto carDto) {
+        Long id = carDto.getId();
+        Car car = carRepository.findById(id).orElseThrow(() -> new CustomException(NOT_FOUND));
+        car.setId(id);
+        car.setPrice(carDto.getPrice());
+        carRepository.save(car);
     }
 
-    public List<Car> findCars(String brand, LocalDate year, Long categoryId, Double minPrice, Double maxPrice) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Car> query = cb.createQuery(Car.class);
-        Root<Car> car = query.from(Car.class);
-        Predicate predicate = cb.conjunction();
-        if (brand != null) {
-            predicate = cb.and(predicate, cb.equal(car.get("model"), brand));
-        }
-        if (year != null) {
-            predicate = cb.and(predicate, cb.equal(car.get("productionYear"), year));
-        }
-        if (categoryId != null) {
-            predicate = cb.and(predicate, cb.equal(car.get("category").get("id"), categoryId));
-        }
-        if (minPrice != null) {
-            predicate = cb.and(predicate, cb.greaterThanOrEqualTo(car.get("price"), minPrice));
-        }
-        if (maxPrice != null) {
-            predicate = cb.and(predicate, cb.lessThanOrEqualTo(car.get("price"), maxPrice));
-        }
-        query.where(predicate);
-        return entityManager.createQuery(query).getResultList();
+    @Transactional
+    public void delete(Long id) {
+        carRepository.findById(id).orElseThrow(() -> new CustomException(NOT_FOUND));
+        carRepository.deleteById(id);
     }
 
-    public List<Car> findCarsWithSorting(String brand, Double minPrice, Double maxPrice, boolean ascending) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Car> query = cb.createQuery(Car.class);
-        Root<Car> car = query.from(Car.class);
-        Predicate predicate = cb.conjunction();
-        if (brand != null) {
-            predicate = cb.and(predicate, cb.equal(car.get("model"), brand));
-        }
-        if (minPrice != null) {
-            predicate = cb.and(predicate, cb.greaterThanOrEqualTo(car.get("price"), minPrice));
-        }
-        if (maxPrice != null) {
-            predicate = cb.and(predicate, cb.lessThanOrEqualTo(car.get("price"), maxPrice));
-        }
-        query.where(predicate);
-
-        if (ascending) {
-            query.orderBy(cb.asc(car.get("price")));
-        } else {
-            query.orderBy(cb.desc(car.get("price")));
-        }
-        return entityManager.createQuery(query).getResultList();
-    }
-
-    public List<Car> findCarsWithPagination(int offset, int limit) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Car> query = cb.createQuery(Car.class);
-        Root<Car> car = query.from(Car.class);
-
-        query.select(car);
-
-        return entityManager.createQuery(query)
-                .setFirstResult(offset)
-                .setMaxResults(limit)
-                .getResultList();
+    @Transactional
+    public void addShowroom(AddCarDto addCarDto) {
+        Long carId = addCarDto.getCarId();
+        Long showroomId = addCarDto.getShowroomId();
+        Car car =
+                carRepository.findById(carId).orElseThrow(()->new CustomException());
+        CarShowroom carShowroom =
+                showroomRepository.findById(showroomId).orElseThrow(() -> new CustomException());
+        car.setCarShowroom(carShowroom);
+        carRepository.save(car);
     }
 }

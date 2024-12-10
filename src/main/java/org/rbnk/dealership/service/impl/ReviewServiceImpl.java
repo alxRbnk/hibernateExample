@@ -1,59 +1,83 @@
 package org.rbnk.dealership.service.impl;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.RequiredArgsConstructor;
+import org.rbnk.dealership.dto.AddReviewDto;
+import org.rbnk.dealership.dto.ReviewDto;
+import org.rbnk.dealership.entity.Car;
+import org.rbnk.dealership.entity.Client;
 import org.rbnk.dealership.entity.Review;
+import org.rbnk.dealership.exception.CustomException;
+import org.rbnk.dealership.repository.CarRepository;
+import org.rbnk.dealership.repository.ClientRepository;
+import org.rbnk.dealership.repository.ReviewRepository;
+import org.rbnk.dealership.service.ClientService;
 import org.rbnk.dealership.service.ReviewService;
+import org.rbnk.dealership.util.ReviewMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.List;
+import java.util.Optional;
 
+@Service
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
-    private final EntityManager entityManager;
+    private static final String REVIEW_NOT_FOUND = "Review not found";
+    private static final String CLIENT_NOT_FOUND = "Client not found";
+    private static final String CAR_NOT_FOUND = "Car not found";
+    private final ReviewRepository reviewRepository;
+    private final CarRepository carRepository;
+    private final ClientRepository clientRepository;
 
-    public void saveReview(Review review) {
-        entityManager.getTransaction().begin();
-        entityManager.persist(review);
-        entityManager.getTransaction().commit();
+    public ReviewDto findById(Long id) {
+        Optional<Review> reviewOptional = reviewRepository.findById(id);
+        Review review = reviewOptional.orElseThrow(() -> new CustomException(REVIEW_NOT_FOUND));
+        return ReviewMapper.INSTANCE.reviewToDto(review);
     }
 
-    public void updateReview(Review review) {
-        entityManager.getTransaction().begin();
-        entityManager.merge(review);
-        entityManager.getTransaction().commit();
+    public List<ReviewDto> findAll() {
+        List<Review> reviews = reviewRepository.findAll();
+        return reviews.stream()
+                .map(ReviewMapper.INSTANCE::reviewToDto)
+                .toList();
     }
 
-    public void deleteReview(Long id) {
-        entityManager.getTransaction().begin();
-        Review review = entityManager.find(Review.class, id);
-        if (review != null) {
-            entityManager.remove(review);
-        }
-        entityManager.getTransaction().commit();
+    @Transactional
+    public void save(ReviewDto reviewDto) {
+        Review review = ReviewMapper.INSTANCE.dtoToReview(reviewDto);
+        reviewRepository.save(review);
     }
 
-    public Review getReviewById(Long id) {
-        return entityManager.find(Review.class, id);
+    @Transactional
+    public void update(ReviewDto reviewDto) {
+        Long id = reviewDto.getId();
+        reviewRepository.findById(id).orElseThrow(() -> new CustomException(REVIEW_NOT_FOUND));
+        Review review = ReviewMapper.INSTANCE.dtoToReview(reviewDto);
+        review.setId(id);
+        reviewRepository.save(review);
     }
 
-    public List<Review> getAllReviews() {
-        entityManager.getTransaction().begin();
-        String jpqlQuery = "SELECT c FROM Review c";
-        Query query = entityManager.createQuery(jpqlQuery, Review.class);
-        List<Review> reviews = query.getResultList();
-        entityManager.getTransaction().commit();
-        return reviews;
+    @Transactional
+    public void delete(Long id) {
+        reviewRepository.findById(id).orElseThrow(() -> new CustomException(REVIEW_NOT_FOUND));
+        reviewRepository.deleteById(id);
     }
 
-    public List<Review> findReviewsByKeyword(String keyword) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Review> query = cb.createQuery(Review.class);
-        Root<Review> review = query.from(Review.class);
-        query.where(cb.like(review.get("text"), "%" + keyword + "%"));
-        return entityManager.createQuery(query).getResultList();
+    @Transactional
+    public void addReviewToCar(AddReviewDto addReviewDto){
+        Car car = carRepository.findById(addReviewDto.getCarId())
+                .orElseThrow(() -> new CustomException(CAR_NOT_FOUND));
+        Client client = clientRepository.findById(addReviewDto.getClientId())
+                .orElseThrow(() -> new CustomException(CLIENT_NOT_FOUND));
+        Review review = Review.builder()
+                .text(addReviewDto.getText())
+                .rating(addReviewDto.getRating())
+                .car(car)
+                .client(client)
+                .build();
+        reviewRepository.save(review);
     }
 }

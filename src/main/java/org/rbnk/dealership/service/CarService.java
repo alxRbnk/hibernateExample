@@ -1,24 +1,25 @@
 package org.rbnk.dealership.service;
 
-import org.rbnk.dealership.entity.Car;
+import org.rbnk.dealership.dto.AddCarDto;
+import org.rbnk.dealership.dto.CarDto;
+import org.rbnk.dealership.dto.CarPriceDto;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public interface CarService {
-    void saveCar(Car car);
 
-    void updateCar(Car car);
+    CarDto findCarById(Long id);
 
-    void deleteCar(Long id);
+    List<CarDto> findAll();
 
-    Car getCarById(Long id);
+    void save(CarDto carDto);
 
-    List<Car> getAllCars();
+    void fullUpdate(CarDto carDto);
 
-    List<Car> findCars(String brand, LocalDate year, Long categoryId, Double minPrice, Double maxPrice);
+    void priceUpdate(CarPriceDto carDto);
 
-    List<Car> findCarsWithSorting(String brand, Double minPrice, Double maxPrice, boolean ascending);
+    void delete(Long id);
 
-    List<Car> findCarsWithPagination(int offset, int limit);
+    void addShowroom(AddCarDto addCarDto);
 }
