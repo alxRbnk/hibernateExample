@@ -33,7 +33,7 @@ public class Review {
     private String text;
 
     @Column(name = "rating")
-    private int rating;
+    private Integer rating;
 
     @ManyToOne
     @JoinColumn(name = "car_id")

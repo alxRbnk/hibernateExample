@@ -21,10 +21,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CarDto {
-    @NotNull(message = "cannot be null")
+    @NotNull(message = "id cannot be null")
     private Long id;
 
-    @NotNull(message = "cannot be null")
+    @NotNull(message = "model cannot be null")
     @Size(min = 2, max = 50, message = "The model name should be between 2 and 50 characters")
     private String model;
 

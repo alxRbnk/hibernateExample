@@ -1,6 +1,5 @@
 package org.rbnk.dealership.dto;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,17 +8,20 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDate;
+
 @Builder
 @Getter
 @Setter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class CarPriceDto {
-    @NotNull(message = "id cannot be null")
+public class ClientDto {
+    @NotNull(message = "client id cannot be null")
     private Long id;
 
-    @NotNull(message = "cannot be null")
-    @Min(value = 0, message = "price must be greater than zero")
-    private Double price;
+    @NotNull(message = "client name cannot be null")
+    private String name;
+
+    private LocalDate registrationDate;
 }

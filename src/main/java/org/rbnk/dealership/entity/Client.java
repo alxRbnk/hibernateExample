@@ -54,5 +54,4 @@ public class Client {
     @CollectionTable(name = "client_contacts", joinColumns = @JoinColumn(name = "client_id"))
     @Column(name = "contact")
     private List<String> contacts;
-
 }

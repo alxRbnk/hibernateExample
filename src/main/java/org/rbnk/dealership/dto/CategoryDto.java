@@ -1,7 +1,7 @@
 package org.rbnk.dealership.dto;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,11 +15,11 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class CarPriceDto {
+public class CategoryDto {
     @NotNull(message = "id cannot be null")
     private Long id;
 
-    @NotNull(message = "cannot be null")
-    @Min(value = 0, message = "price must be greater than zero")
-    private Double price;
+    @NotNull(message = "category name cannot be null")
+    @Size(min = 2, max = 50, message = "The category name should be between 2 and 50 characters")
+    private String name;
 }

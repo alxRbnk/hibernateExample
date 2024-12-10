@@ -1,9 +1,12 @@
 package org.rbnk.dealership.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.rbnk.dealership.dto.AddCarDto;
 import org.rbnk.dealership.dto.ShowroomDto;
+import org.rbnk.dealership.entity.Car;
 import org.rbnk.dealership.entity.CarShowroom;
 import org.rbnk.dealership.exception.CustomException;
+import org.rbnk.dealership.repository.CarRepository;
 import org.rbnk.dealership.repository.ShowroomRepository;
 import org.rbnk.dealership.service.ShowroomService;
 import org.rbnk.dealership.util.ShowroomMapper;
@@ -18,6 +21,7 @@ import java.util.Optional;
 public class ShowroomServiceImpl implements ShowroomService {
     private static final String NOT_FOUND = "Showroom not found";
     private final ShowroomRepository showroomRepository;
+    private final CarRepository carRepository;
 
     public ShowroomDto findById(Long id) {
         Optional<CarShowroom> carOptional = showroomRepository.findById(id);

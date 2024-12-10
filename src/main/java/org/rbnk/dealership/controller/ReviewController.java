@@ -3,9 +3,9 @@ package org.rbnk.dealership.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.rbnk.dealership.dto.AddCarDto;
-import org.rbnk.dealership.dto.ShowroomDto;
-import org.rbnk.dealership.service.ShowroomService;
+import org.rbnk.dealership.dto.AddReviewDto;
+import org.rbnk.dealership.dto.ReviewDto;
+import org.rbnk.dealership.service.ReviewService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,40 +19,49 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/showrooms")
-public class ShowroomController {
-    private final ShowroomService showroomService;
+@RequestMapping("/reviews")
+public class ReviewController {
+    private final ReviewService reviewService;
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ShowroomDto getById(@PathVariable("id") @NotNull Long id) {
-        return showroomService.findById(id);
+    public ReviewDto getById(@PathVariable("id") @NotNull Long id) {
+        return reviewService.findById(id);
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ShowroomDto> getAll() {
-        return showroomService.findAll();
+    public List<ReviewDto> getAll() {
+        return reviewService.findAll();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void save(@RequestBody @Valid ShowroomDto showroomDto) {
-        showroomService.save(showroomDto);
+    public void save(@RequestBody @Valid ReviewDto reviewDto) {
+        reviewService.save(reviewDto);
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void update(@RequestBody @Valid ShowroomDto showroomDto) {
-        showroomService.update(showroomDto);
+    public void update(@RequestBody @Valid ReviewDto reviewDto) {
+        reviewService.update(reviewDto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable("id") @NotNull Long id) {
-        showroomService.delete(id);
+        reviewService.delete(id);
     }
 
+    @PostMapping("/add")
+    @ResponseStatus(HttpStatus.OK)
+    public void addReviewToCar(@RequestBody @Valid AddReviewDto addReviewDto){
+        reviewService.addReviewToCar(addReviewDto);
+    }
+
+
 }
+

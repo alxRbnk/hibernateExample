@@ -3,6 +3,7 @@ package org.rbnk.dealership.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.rbnk.dealership.dto.AddCarDto;
 import org.rbnk.dealership.dto.CarDto;
 import org.rbnk.dealership.dto.CarPriceDto;
 import org.rbnk.dealership.service.CarService;
@@ -60,5 +61,11 @@ public class CarController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable("id") @NotNull Long id) {
         carService.delete(id);
+    }
+
+    @PostMapping("/add")
+    @ResponseStatus(HttpStatus.OK)
+    public void addCarToShowroom(@RequestBody @Valid AddCarDto addCarDto) {
+        carService.addShowroom(addCarDto);
     }
 }

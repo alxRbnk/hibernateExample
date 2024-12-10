@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.HashMap;
@@ -13,9 +14,9 @@ import java.util.Map;
 import java.util.Set;
 
 @ControllerAdvice
-public class ExceptionHandler {
+public class AdviceExceptionHandler {
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(ValidationException.class)
+    @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Map<String, Object>> handleValidationException(ValidationException ex, BindingResult result) {
         Map<String, Object> response = new HashMap<>();
@@ -30,7 +31,7 @@ public class ExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(Exception.class)
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<Map<String, Object>> handleGlobalException(Exception ex) {
         Map<String, Object> response = new HashMap<>();

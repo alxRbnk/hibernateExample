@@ -3,9 +3,11 @@ package org.rbnk.dealership.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.rbnk.dealership.dto.AddCarDto;
-import org.rbnk.dealership.dto.ShowroomDto;
-import org.rbnk.dealership.service.ShowroomService;
+import org.rbnk.dealership.dto.AssignCarDto;
+import org.rbnk.dealership.dto.CategoryDto;
+import org.rbnk.dealership.dto.ClientDto;
+import org.rbnk.dealership.service.CategoryService;
+import org.rbnk.dealership.service.ClientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,38 +23,43 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/showrooms")
-public class ShowroomController {
-    private final ShowroomService showroomService;
+@RequestMapping("/clients")
+public class ClientController {
+    private final ClientService clientService;
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ShowroomDto getById(@PathVariable("id") @NotNull Long id) {
-        return showroomService.findById(id);
+    public ClientDto getById(@PathVariable("id") @NotNull Long id) {
+        return clientService.findById(id);
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ShowroomDto> getAll() {
-        return showroomService.findAll();
+    public List<ClientDto> getAll() {
+        return clientService.findAll();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void save(@RequestBody @Valid ShowroomDto showroomDto) {
-        showroomService.save(showroomDto);
+    public void save(@RequestBody @Valid ClientDto clientDto) {
+        clientService.save(clientDto);
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void update(@RequestBody @Valid ShowroomDto showroomDto) {
-        showroomService.update(showroomDto);
+    public void update(@RequestBody @Valid ClientDto clientDto) {
+        clientService.update(clientDto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable("id") @NotNull Long id) {
-        showroomService.delete(id);
+        clientService.delete(id);
     }
 
+    @PostMapping("assign")
+    @ResponseStatus(HttpStatus.OK)
+    public void save(@RequestBody @Valid AssignCarDto assignCarDto) {
+        clientService.assignCarToClient(assignCarDto);
+    }
 }

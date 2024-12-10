@@ -1,5 +1,6 @@
 package org.rbnk.dealership.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -17,19 +18,31 @@ import java.util.Properties;
 
 @Configuration
 @ComponentScan(basePackages = "org.rbnk.dealership")
-@PropertySource("classpath:application.yml")
+@PropertySource(value = "classpath:application.yml",factory = YamlPropertySourceFactory.class)
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "org.rbnk.dealership.repository")
 @EnableWebMvc
 public class ApplicationConfiguration {
 
+    @Value("${datasource.url}")
+    private String url;
+
+    @Value("${datasource.username}")
+    private String username;
+
+    @Value("${datasource.password}")
+    private String password;
+
+    @Value("${datasource.driver-class-name}")
+    private String driverClassName;
+
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://localhost:5432/showroom");
-        dataSource.setUsername("postgres");
-        dataSource.setPassword("postgres");
+        dataSource.setDriverClassName(driverClassName);
+        dataSource.setUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
         return dataSource;
     }
 
